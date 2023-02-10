@@ -1,1 +1,231 @@
+from gpiozero import LED
+from gpiozero import Button
+from gpiozero import DistanceSensor
+from gpiozero import Buzzer
+from gpiozero import PWMLED
+from time import sleep
+from signal import pause
 
+R1 = LED(14)
+R2 = LED(15)
+R3 = LED(18)
+R4 = LED(23)
+
+C1 = Button(24)
+C2 = Button(25)
+C3 = Button(8)
+
+sensor = DistanceSensor(echo=26, trigger=21)
+buzzer = Buzzer(2)
+Blue = LED(11)
+Green = LED(9)
+Red = LED(10)
+
+global active
+active = False
+
+def starcheck():
+  while True:
+    R1.on()
+    R2.on()
+    R3.on()
+    R4.off()
+    if C1.is_pressed:
+      print("Enter code")
+      while C1.is_pressed:
+        if C1.is_pressed == False:
+          break
+  break
+  
+code = ""
+password = "4567"
+
+def detect():
+  while True:
+  threshold_distance = 0.1
+  print(sensor.distance)
+  if sensor.distance < threshold_distance:
+    print(sensor.distance)
+    return True
+  else:
+    pass
+    
+def row1():
+  global code
+  R1.off()
+  R2.on()
+  R3.on()
+  R4.on()
+  
+  if C1.is_pressed:
+    print("1")
+    code += "1"
+    while C1.is_pressed:
+      if C1.is_pressed == False:
+    break
+    
+  elif C2.is_pressed:
+    print("2")
+    code += "2"
+    while C2.is_pressed:
+      if C2.is_pressed == False:
+    break
+  
+  elif C3.is_pressed:
+    print("3")
+    code += "3"
+    while C3.is_pressed:
+      if C3.is_pressed == False:
+    break
+    
+def row2():
+  global code
+  R1.on()
+  R2.off()
+  R3.on()
+  R4.on()
+  
+  if C1.is_pressed:
+    print("4")
+    code += "4"
+    while C1.is_pressed:
+      if C1.is_pressed == False:
+    break
+  
+  elif C2.is_pressed:
+    print("5")
+    code += "5"
+    while C2.is_pressed:
+      if C2.is_pressed == False:
+    break
+  
+  elif C3.is_pressed:
+    print("6")
+    code += "6"
+    while C3.is_pressed:
+      if C3.is_pressed == False:
+    break
+    
+def row3():
+  global code
+  R1.on()
+  R2.on()
+  R3.off()
+  R4.on()
+  
+  if C1.is_pressed:
+    print("7")
+    code += "7"
+    while C1.is_pressed:
+      if C1.is_pressed == False:
+    break
+    
+  elif C2.is_pressed:
+    print("8")
+    code += "8"
+    while C2.is_pressed:
+      if C2.is_pressed == False:
+    break
+    
+  elif C3.is_pressed:
+    print("9")
+    code += "9"
+    while C3.is_pressed:
+      if C3.is_pressed == False:
+    break
+    
+def row4():
+  global code
+  R1.on()
+  R2.on()
+  R3.on()
+  R4.off()
+  
+  if C1.is_pressed:
+    if active == True:
+      print("*")
+      code += "*"
+      while C1.is_pressed:
+        if C1.is_pressed == False:
+      break
+      
+  elif C2.is_pressed:
+    print("0")
+    code += "0"
+    while C2.is_pressed:
+      if C2.is_pressed == False:
+    break
+    
+  elif C3.is_pressed:
+    print("#")
+    code += "#"
+    while C3.is_pressed:
+      if C3.is_pressed == False:
+    break
+    
+def lock():
+  while True:
+  row1()
+  row2()
+  row3()
+  row4()
+  if len(code) == 4:
+  break
+  
+def main(armed):
+  starcheck()
+  lock()
+  global code
+  
+  while len(code) < 5:
+    if code == password:
+      buzzer.off()
+      code = ""
+      if armed == True:
+        print("System disarmed")
+        Blue.on()
+        Green.off()
+        Red.off()
+        code = ""
+        main(False)
+
+      elif armed == False:
+        print("System armed")
+        Blue.off()
+        Green.on()
+        Red.off()
+        code = ""
+
+        if detect():
+          print("Intruder- :(")
+          while True:
+            buzzer.on()
+            main("neutral")
+          buzzer.off()
+        main(True)
+
+      elif armed == "neutral":
+        pass
+
+      elif len(code) ==len(password) and code != password:
+        print("Wrong Password!!!")
+        Blue.off()
+        Green.off()
+        Red.on()
+        buzzer.on()
+        sleep(0.5)
+        buzzer.off()
+        code = ""
+
+      Red.off()
+      Green.off()
+      Blue.on()
+
+      if armed == False:
+        main(True)
+      else:
+        main(False)
+  
+main(False)
+
+pause()
